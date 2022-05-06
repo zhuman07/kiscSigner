@@ -8,9 +8,9 @@ using json = nlohmann::json;
 using namespace std;
 using namespace restbed;
 
-void method_handler( const shared_ptr< Session > session )
+void method_handler(const shared_ptr<Session> session)
 {
-    const auto request = session->get_request( );
+    const auto request = session->get_request();
 
     char *profile = "PCIDTEST.P0201020";
     string data = string{"hello world!"};
