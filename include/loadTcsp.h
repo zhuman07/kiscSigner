@@ -4,10 +4,22 @@
 //
 // TCSP Loader
 //------------------------------------------------------------------------------
+//#include "tdefs.h"
+#include <stdio.h>
+#include <string.h>
+#ifdef WIND32
+#include <windows.h>
+#else
+#include <stdlib.h>
+#include <unistd.h>
+#include <dlfcn.h>
+#include "wdefs.h"
+#endif
+
 #ifndef LOAD_TCSP_H
 #define LOAD_TCSP_H
 //------------------------------------------------------------------------------
-//#include "tdefs.h"
+#include "tdefs.h"
 //------------------------------------------------------------------------------
 #define LOADLIBRARY
 #include "cptumar.h"

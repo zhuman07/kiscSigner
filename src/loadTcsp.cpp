@@ -4,17 +4,7 @@
 //
 // TCSP Loader
 //------------------------------------------------------------------------------
-#include "tdefs.h"
-#include <stdio.h>
-#include <string.h>
-#ifdef WIND32
-#include <windows.h>
-#else
-#include <stdlib.h>
-#include <unistd.h>
-#include <dlfcn.h>
-#include "wdefs.h"
-#endif
+
 
 #include "loadTcsp.h"
 //------------------------------------------------------------------------------
@@ -129,9 +119,9 @@ int LoadTumarCSP(char *lib_path)
  char path[260];
  csp_xlock.enter();
  if (hTcspLib)               {csp_xlock.leave(); return 0;}
- if ((lib_path)&&(*lib_path)) strcpy_s(path,lib_path);
+ if ((lib_path)&&(*lib_path)) strcpy(path,lib_path);
  else if (GetTcspPath(path)) {csp_xlock.leave(); return -1;}
- hTcspLib=LoadLibraryA(path);
+ hTcspLib=LoadLibrary(path);
  if (!hTcspLib)              {csp_xlock.leave(); return -2;}
  code=GetTcspFancs(hTcspLib);
  if (code) {FreeLibrary(hTcspLib); hTcspLib=NULL;}

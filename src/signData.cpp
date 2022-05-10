@@ -12,9 +12,9 @@ DWORD GetLastErrorCSP(HCRYPTPROV hProv)
 int signData(char *profile, unsigned char *data, unsigned char *sign)
 {
     unsigned long size;
-    unsigned long len;
+    DWORD len;
     unsigned char cert[8192];
-    unsigned long slen;
+    DWORD slen;
     HCRYPTPROV hProv = 0;
     HCRYPTHASH hHash;
     HCRYPTKEY hKey;
@@ -91,7 +91,7 @@ int signData(char *profile, unsigned char *data, unsigned char *sign)
 int verify(char *profile, unsigned char *data, unsigned char *sign)
 {
     unsigned long size;
-    unsigned long len;
+    DWORD len;
     unsigned char cert[8192];
     unsigned long slen;
     FILE *f_data;

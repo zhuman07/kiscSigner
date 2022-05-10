@@ -48,7 +48,7 @@ typedef ULONG_PTR      HCRYPTHASH;
 #define CRYPT_IMPL_SOFTWARE     2
 #define CUR_BLOB_VERSION        2
 
-typedef struct _VTableProvStruc {
+/*typedef struct _VTableProvStruc {
     DWORD   Version;
     FARPROC FuncVerifyImage;
     FARPROC FuncReturnhWnd;
@@ -56,7 +56,7 @@ typedef struct _VTableProvStruc {
     BYTE	*pbContextInfo;
     DWORD	cbContextInfo;
     LPSTR   pszProvName;
-} VTableProvStruc, *PVTableProvStruc;
+} VTableProvStruc, *PVTableProvStruc;*/
 
 typedef struct _PROV_ENUMALGS {
     ALG_ID    aiAlgid;
