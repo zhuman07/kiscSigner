@@ -24,14 +24,14 @@ int signData(char *profile, unsigned char *data, unsigned char *sign)
     if (!CPAcquireContext(&hProv, profile, 0, NULL))
     {
         printf("error open profile - %s [%x]\n", profile, GetLastErrorCSP(0));
-        delete[] data;
+        //delete[] data;
         return 0;
     }
     if (!CPGetUserKey(hProv, AT_SIGNATURE, &hKey))
     {
         printf("error get user key %x\n", GetLastErrorCSP(hProv));
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
     slen = 8192;
@@ -40,7 +40,7 @@ int signData(char *profile, unsigned char *data, unsigned char *sign)
         printf("error get certificate %x\n", GetLastErrorCSP(hProv));
         CPDestroyKey(hProv, hKey);
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
     if (!CPCreateHash(hProv, CALG_TGR3411, 0, 0, &hHash))
@@ -48,7 +48,7 @@ int signData(char *profile, unsigned char *data, unsigned char *sign)
         printf("error create hash %x\n", GetLastErrorCSP(hProv));
         CPDestroyKey(hProv, hKey);
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
     if (!CPHashData(hProv, hHash, (BYTE *)data, size, 0))
@@ -57,7 +57,7 @@ int signData(char *profile, unsigned char *data, unsigned char *sign)
         CPDestroyKey(hProv, hKey);
         CPDestroyHash(hProv, hHash);
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
     if (!CPSetHashParam(hProv, hHash, HP_PKCS7_CERTIFICATE, cert, 0))
@@ -66,7 +66,7 @@ int signData(char *profile, unsigned char *data, unsigned char *sign)
         CPDestroyKey(hProv, hKey);
         CPDestroyHash(hProv, hHash);
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
     len = 8192;
@@ -76,14 +76,13 @@ int signData(char *profile, unsigned char *data, unsigned char *sign)
         CPDestroyKey(hProv, hKey);
         CPDestroyHash(hProv, hHash);
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
     CPDestroyKey(hProv, hKey);
     CPDestroyHash(hProv, hHash);
     CPReleaseContext(hProv, 0);
     //delete[] data;
-    free(data);
     FreeTumarCSP();
     return 1;
 }

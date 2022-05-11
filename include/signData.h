@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-//#include <windows.h>
+#ifdef WIND32
+#include <windows.h>
+#endif
 #include "loadTcsp.h"
 
 namespace kiscSigner{

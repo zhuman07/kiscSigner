@@ -1,5 +1,6 @@
 #include <memory>
 #include <cstdlib>
+#include <iostream>
 #include <restbed>
 #include "json.hpp"
 #include "signData.h"
@@ -12,7 +13,8 @@ void method_handler(const shared_ptr<Session> session)
 {
     const auto request = session->get_request();
 
-    char *profile = reinterpret_cast<char*>(const_cast<char*>(string("PCIDTEST.P0201020").c_str()));
+    //char *profile = reinterpret_cast<char*>(const_cast<char*>(string("FSystem").c_str())); //PCIDTEST.P0201020
+    char *profile = "TEST";
     string data = string{"hello world!"};
     unsigned char *dataToSign = reinterpret_cast<unsigned char*>(const_cast<char*>(data.c_str()));
     unsigned char *signedData;
@@ -21,17 +23,21 @@ void method_handler(const shared_ptr<Session> session)
     fprintf(stdout, "data: %s\nsigned data: %s\n", dataToSign, signedData);
 
     string content_length = request->get_header(string("Content-Length"), string("0"));
-    session->fetch( content_length, [ ]( const shared_ptr< restbed::Session > session, const Bytes & body )
+    session->fetch(content_length, [](const shared_ptr<restbed::Session> session, const Bytes &body)
     {
         //json body = json::parse(body.data());
         
-        fprintf( stdout, "%.*s\n", ( int ) body.size( ), body.data( ) );
-        session->close( OK, "Hello, World!", { { "Content-Length", "13" } } );
-    } );
+        fprintf(stdout, "%.*s\n", (int)body.size(), body.data());
+        session->close(OK, "Hello, World!", {{"Content-Length", "13"}});
+    });
+    //delete[] profile;
+    //delete[] dataToSign;
+    //delete[] signedData;
 }
 
 int main( const int, const char** )
 {
+    cout << "Service start" << endl;
     auto resource = make_shared< Resource >( );
     resource->set_path( "/sign" );
     resource->set_method_handler( "POST", method_handler );
@@ -44,5 +50,6 @@ int main( const int, const char** )
     service.publish( resource );
     service.start( settings );
 
+    cout << "Service end" << endl;
     return EXIT_SUCCESS;
 }
