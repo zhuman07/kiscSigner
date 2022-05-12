@@ -16,7 +16,7 @@ void method_handler(const shared_ptr<Session> session)
     char *profile = "profile://MyProfile";
     string data = string{"hello world!"};
     unsigned char *dataToSign = reinterpret_cast<unsigned char*>(const_cast<char*>(data.c_str()));
-    unsigned char *signedData;
+    unsigned char *signedData = NULL;
     int result = kiscSigner::signData(profile, dataToSign, signedData);
 
     fprintf(stdout, "data: %s\n signed data: %s\n", dataToSign, signedData);
