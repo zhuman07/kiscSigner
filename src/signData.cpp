@@ -112,7 +112,7 @@ int verify(char *profile, unsigned char *data, unsigned char *sign)
     if (!CPAcquireContext(&hProv, cpaSecondArg, CRYPT_VERIFYCONTEXT, NULL))
     {
         printf("error load cryptoprovider - [%x]\n", GetLastErrorCSP(0));
-        delete[] data;
+        //delete[] data;
         return 0;
     }
 
@@ -120,7 +120,7 @@ int verify(char *profile, unsigned char *data, unsigned char *sign)
     {
         printf("error parse pkcs#7 %x\n", GetLastErrorCSP(hProv));
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
 
@@ -128,7 +128,7 @@ int verify(char *profile, unsigned char *data, unsigned char *sign)
     {
         printf("error create hash %x\n", GetLastErrorCSP(hProv));
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
     if (!CPSetHashParam(hProv, hHash, HP_PKCS7_BODY, sign, 0))
@@ -136,7 +136,7 @@ int verify(char *profile, unsigned char *data, unsigned char *sign)
         printf("error set hash param - %x\n", GetLastErrorCSP(hProv));
         CPDestroyHash(hProv, hHash);
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
 
@@ -145,7 +145,7 @@ int verify(char *profile, unsigned char *data, unsigned char *sign)
         printf("error hash data - %x\n", GetLastErrorCSP(hProv));
         CPDestroyHash(hProv, hHash);
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
 
@@ -156,7 +156,7 @@ int verify(char *profile, unsigned char *data, unsigned char *sign)
         printf("error get certificate - %x\n", GetLastErrorCSP(hProv));
         CPDestroyHash(hProv, hHash);
         CPReleaseContext(hProv, 0);
-        delete[] data;
+        //delete[] data;
         return 0;
     }
 
