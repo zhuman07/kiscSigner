@@ -8,6 +8,6 @@
 
 namespace kiscSigner{
 DWORD GetLastErrorCSP(HCRYPTPROV hProv);
-int signData(std::string *profile, std::string *data, std::string *sign);
-int verify(char *profile, unsigned char *data, unsigned char *sign);
+int signData(std::string *profile, std::string *data, unsigned char *sign);
+int verify(std::string *profile, std::string *data, unsigned char *sign);
 };

@@ -21,16 +21,20 @@ void method_handler(const shared_ptr<Session> session)
 
         string profile("profile://MyProfile");
         string dataToSign(data["data"]);
-        string signedData;
+        unsigned char signedData[8192];
         nlohmann::json response = {
             {"success", false},
             {"message", ""},
             {"data", ""}
         };
 
-        if (kiscSigner::signData(&profile, &dataToSign, &signedData)) {
-            response["success"] = true;
-            response["data"] = signedData;
+        if (kiscSigner::signData(&profile, &dataToSign, signedData)) {
+            response["data"] = reinterpret_cast<char*>(signedData);
+            if (kiscSigner::verify(&profile, &dataToSign, signedData)) {
+                response["success"] = true;
+            } else {
+                response["message"] = "failed to verify signature";
+            }
         } else {
             response["message"] = "failed to sign data";
         }

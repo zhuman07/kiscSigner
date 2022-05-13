@@ -1,6 +1,7 @@
 #include "signData.h"
 
 namespace kiscSigner {
+
 DWORD GetLastErrorCSP(HCRYPTPROV hProv)
 {
     DWORD lastError = 0;
@@ -9,14 +10,13 @@ DWORD GetLastErrorCSP(HCRYPTPROV hProv)
     return lastError;
 }
 
-int signData(std::string *profile, std::string *dataToSign, std::string *signedData)
+int signData(std::string *profile, std::string *dataToSign, unsigned char *sign)
 {
     unsigned long size;
     DWORD len;
     unsigned char *data = reinterpret_cast<unsigned char*>(const_cast<char*>(dataToSign->c_str()));
     char *profilec = reinterpret_cast<char*>(const_cast<char*>(profile->c_str()));
     unsigned char cert[8192];
-    unsigned char sign[8192];
     DWORD slen;
     HCRYPTPROV hProv = 0;
     HCRYPTHASH hHash;
@@ -82,7 +82,6 @@ int signData(std::string *profile, std::string *dataToSign, std::string *signedD
         //delete[] data;
         return 0;
     }
-    *signedData = reinterpret_cast<char*>(sign);
     CPDestroyKey(hProv, hKey);
     CPDestroyHash(hProv, hHash);
     CPReleaseContext(hProv, 0);
@@ -91,14 +90,12 @@ int signData(std::string *profile, std::string *dataToSign, std::string *signedD
     return 1;
 }
 
-int verify(char *profile, unsigned char *data, unsigned char *sign)
+int verify(std::string *profile, std::string *dataToSign, unsigned char *sign)
 {
+    unsigned char *data = reinterpret_cast<unsigned char*>(const_cast<char*>(dataToSign->c_str()));
+    char *profilec = reinterpret_cast<char*>(const_cast<char*>(profile->c_str()));
     unsigned long size;
     DWORD len;
-    unsigned char cert[8192];
-    unsigned long slen;
-    FILE *f_data;
-    FILE *f_sign;
     HCRYPTPROV hProv = 0;
     HCRYPTHASH hHash;
     HCRYPTKEY hKey;
@@ -112,7 +109,7 @@ int verify(char *profile, unsigned char *data, unsigned char *sign)
     p7i.object.pbData = sign;
     p7i.object.cbData = len < 8192 ? len : 8192;
     
-    char *cpaSecondArg;
+    char *cpaSecondArg = nullptr;
     if (!CPAcquireContext(&hProv, cpaSecondArg, CRYPT_VERIFYCONTEXT, NULL))
     {
         printf("error load cryptoprovider - [%x]\n", GetLastErrorCSP(0));
@@ -221,5 +218,6 @@ int verify(char *profile, unsigned char *data, unsigned char *sign)
     FreeTumarCSP();
     return 1;
 }
+
 };
 
