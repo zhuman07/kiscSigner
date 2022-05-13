@@ -9,11 +9,14 @@ DWORD GetLastErrorCSP(HCRYPTPROV hProv)
     return lastError;
 }
 
-int signData(char *profile, unsigned char *data, unsigned char *sign)
+int signData(std::string *profile, std::string *dataToSign, std::string *signedData)
 {
     unsigned long size;
     DWORD len;
+    unsigned char *data = reinterpret_cast<unsigned char*>(const_cast<char*>(dataToSign->c_str()));
+    char *profilec = reinterpret_cast<char*>(const_cast<char*>(profile->c_str()));
     unsigned char cert[8192];
+    unsigned char sign[8192];
     DWORD slen;
     HCRYPTPROV hProv = 0;
     HCRYPTHASH hHash;
@@ -21,9 +24,9 @@ int signData(char *profile, unsigned char *data, unsigned char *sign)
     ObjectInfoStr_t p7i;
     DWORD plen;
     LoadTumarCSP(NULL);
-    if (!CPAcquireContext(&hProv, profile, 0, NULL))
+    if (!CPAcquireContext(&hProv, profilec, 0, NULL))
     {
-        printf("error open profile - %s [%x]\n", profile, GetLastErrorCSP(0));
+        printf("error open profile - %s [%x]\n", profilec, GetLastErrorCSP(0));
         //delete[] data;
         return 0;
     }
@@ -79,6 +82,7 @@ int signData(char *profile, unsigned char *data, unsigned char *sign)
         //delete[] data;
         return 0;
     }
+    *signedData = reinterpret_cast<char*>(sign);
     CPDestroyKey(hProv, hKey);
     CPDestroyHash(hProv, hHash);
     CPReleaseContext(hProv, 0);

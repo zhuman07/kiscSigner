@@ -11,28 +11,35 @@ using namespace restbed;
 void method_handler(const shared_ptr<Session> session)
 {
     const auto request = session->get_request();
-
-    //char *profile = reinterpret_cast<char*>(const_cast<char*>(string("FSystem").c_str())); //PCIDTEST.P0201020
-    char *profile = "profile://MyProfile";
-    string data = string{"hello world!"};
-    unsigned char *dataToSign = reinterpret_cast<unsigned char*>(const_cast<char*>(data.c_str()));
-    unsigned char *signedData = NULL;
-    int result = kiscSigner::signData(profile, dataToSign, signedData);
-
-    fprintf(stdout, "data: %s\n signed data: %s\n", dataToSign, signedData);
+    
     int content_length;
     request->get_header(string("Content-Length"), content_length, 0);
-    session->fetch(content_length, [signedData, content_length](const shared_ptr<restbed::Session> session, const Bytes &body)
+    session->fetch(content_length, [](const shared_ptr<restbed::Session> session, const Bytes &body)
     {
-        nlohmann::json json_body = {
-            {"result", "hello world"}
+        nlohmann::json data = nlohmann::json::parse(restbed::String::to_string(body));
+        cout << "post: " << data["data"] << endl;
+
+        string profile("profile://MyProfile");
+        string dataToSign(data["data"]);
+        string signedData;
+        nlohmann::json response = {
+            {"success", false},
+            {"message", ""},
+            {"data", ""}
         };
-        //fprintf(stdout, "%.*s\n", (int)body.size(), body.data());
-        session->close(OK, json_body.dump(), {{"Content-Type", "application/json"}});
+
+        if (kiscSigner::signData(&profile, &dataToSign, &signedData)) {
+            response["success"] = true;
+            response["data"] = signedData;
+        } else {
+            response["message"] = "failed to sign data";
+        }
+
+        cout << "data: " << dataToSign << endl;
+        cout << "signed data: " << signedData << endl;
+
+        session->close(OK, response.dump(), {{"Content-Type", "application/json"}});
     });
-    //delete[] profile;
-    //delete[] dataToSign;
-    //delete[] signedData;
 }
 
 int main( const int, const char** )
