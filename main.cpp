@@ -4,6 +4,7 @@
 #include <restbed>
 #include "json.hpp"
 #include "signData.h"
+#include "base64.h"
 
 using namespace std;
 using namespace restbed;
@@ -32,24 +33,11 @@ void method_handler(const shared_ptr<Session> session)
         string signatureData;
 
         if (kiscSigner::signData(&profile, &dataToSign, signedData, &signLength)) {
-            
-            /*for (int i = 0; i < sizeof(signedData)/sizeof(signedData[0]); i++)
-            {
-                char buff[4];
-                sprintf(buff, "%02x", (unsigned char)signedData[i]);
-                signatureData = signatureData + buff;
-            }*/
-            //*signedData = {};
             if (kiscSigner::verify(&profile, &dataToSign, signedData, &signLength)) {
-
-                std::stringstream ss;
-                for (DWORD i = 0; i < 8192; i++) {
-                    ss << std::hex << std::setfill('0') << std::setw(2) << (short)signedData[8192 - i - 1];
-                }
-                signatureData = ss.str();
+                signatureData = base64_encode(signedData, signLength);
 
                 response["success"] = true;
-                response["data"] = signatureData;//reinterpret_cast<char*>(signedData);
+                response["data"] = signatureData;
             } else {
                 response["message"] = "failed to verify signature";
             }

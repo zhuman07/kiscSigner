@@ -10,8 +10,6 @@ main.cpp
 ${CMAKE_SOURCE_DIR}/src/loadTcsp.cpp 
 ${CMAKE_SOURCE_DIR}/src/signData.cpp)
 
-#include(C:/src/vcpkg/scripts/buildsystems/vcpkg.cmake)
-#find_package(restbed)
 target_link_libraries(kisc_sign restbed)
 
 target_include_directories(kisc_sign PUBLIC ${CMAKE_SOURCE_DIR}/include)
