@@ -22,16 +22,34 @@ void method_handler(const shared_ptr<Session> session)
         string profile("profile://MyProfile");
         string dataToSign(data["data"]);
         unsigned char signedData[8192];
+        DWORD signLength;
+        
         nlohmann::json response = {
             {"success", false},
             {"message", ""},
             {"data", ""}
         };
+        string signatureData;
 
-        if (kiscSigner::signData(&profile, &dataToSign, signedData)) {
-            response["data"] = reinterpret_cast<char*>(signedData);
-            if (kiscSigner::verify(&profile, &dataToSign, signedData)) {
+        if (kiscSigner::signData(&profile, &dataToSign, signedData, &signLength)) {
+            
+            /*for (int i = 0; i < sizeof(signedData)/sizeof(signedData[0]); i++)
+            {
+                char buff[4];
+                sprintf(buff, "%02x", (unsigned char)signedData[i]);
+                signatureData = signatureData + buff;
+            }*/
+            //*signedData = {};
+            if (kiscSigner::verify(&profile, &dataToSign, signedData, &signLength)) {
+
+                std::stringstream ss;
+                for (DWORD i = 0; i < 8192; i++) {
+                    ss << std::hex << std::setfill('0') << std::setw(2) << (short)signedData[8192 - i - 1];
+                }
+                signatureData = ss.str();
+
                 response["success"] = true;
+                response["data"] = signatureData;//reinterpret_cast<char*>(signedData);
             } else {
                 response["message"] = "failed to verify signature";
             }

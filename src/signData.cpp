@@ -10,10 +10,13 @@ DWORD GetLastErrorCSP(HCRYPTPROV hProv)
     return lastError;
 }
 
-int signData(std::string *profile, std::string *dataToSign, unsigned char *sign)
+int signData(std::string *profile, std::string *dataToSign, unsigned char *sign, DWORD *len)
 {
-    unsigned long size;
-    DWORD len;
+    /*char fileSign[MAX_PATH];
+    FILE *f_sign;*/
+
+    unsigned long size = dataToSign->size();
+    //DWORD len;
     unsigned char *data = reinterpret_cast<unsigned char*>(const_cast<char*>(dataToSign->c_str()));
     char *profilec = reinterpret_cast<char*>(const_cast<char*>(profile->c_str()));
     unsigned char cert[8192];
@@ -24,6 +27,7 @@ int signData(std::string *profile, std::string *dataToSign, unsigned char *sign)
     ObjectInfoStr_t p7i;
     DWORD plen;
     LoadTumarCSP(NULL);
+
     if (!CPAcquireContext(&hProv, profilec, 0, NULL))
     {
         printf("error open profile - %s [%x]\n", profilec, GetLastErrorCSP(0));
@@ -72,8 +76,17 @@ int signData(std::string *profile, std::string *dataToSign, unsigned char *sign)
         //delete[] data;
         return 0;
     }
-    len = 8192;
-    if (!CPSignHash(hProv, hHash, AT_SIGNATURE, NULL, CRYPT_SIGN_PKCS7, sign, &len))
+    //len = 8192;
+    if (!CPSignHash(hProv, hHash, AT_SIGNATURE, NULL, CRYPT_SIGN_PKCS7, NULL, len))
+    {
+        printf("error get length of sign data - %x\n", GetLastErrorCSP(hProv));
+        CPDestroyKey(hProv, hKey);
+        CPDestroyHash(hProv, hHash);
+        CPReleaseContext(hProv, 0);
+        //delete[] data;
+        return 0;
+    }
+    if (!CPSignHash(hProv, hHash, AT_SIGNATURE, NULL, CRYPT_SIGN_PKCS7, sign, len))
     {
         printf("error sign data - %x\n", GetLastErrorCSP(hProv));
         CPDestroyKey(hProv, hKey);
@@ -86,28 +99,39 @@ int signData(std::string *profile, std::string *dataToSign, unsigned char *sign)
     CPDestroyHash(hProv, hHash);
     CPReleaseContext(hProv, 0);
     //delete[] data;
+    /*f_sign = fopen("signed_data.sign", "wb");
+    fwrite(sign, len, 1, f_sign);
+    fclose(f_sign);*/
     FreeTumarCSP();
     return 1;
 }
 
-int verify(std::string *profile, std::string *dataToSign, unsigned char *sign)
+int verify(std::string *profile, std::string *dataToSign, unsigned char *sign, DWORD *len)
 {
+    /*char fileSign[MAX_PATH];
+    FILE *f_sign;*/
+
     unsigned char *data = reinterpret_cast<unsigned char*>(const_cast<char*>(dataToSign->c_str()));
     char *profilec = reinterpret_cast<char*>(const_cast<char*>(profile->c_str()));
-    unsigned long size;
-    DWORD len;
+    unsigned long size = dataToSign->size();
+    
     HCRYPTPROV hProv = 0;
     HCRYPTHASH hHash;
     HCRYPTKEY hKey;
     ObjectInfoStr_t p7i;
     DWORD plen;
-    plen = sizeof(p7i);
-    p7i.object.pbData = sign;
-    p7i.object.cbData = len < 8192 ? len : 8192;
     LoadTumarCSP(NULL);
+
+    /*f_sign = fopen("signed_data.sign", "rb");
+    fseek(f_sign, 0L, SEEK_END);
+    len = ftell(f_sign);
+    fseek(f_sign, 0L, SEEK_SET);
+    fread(sign, len<8192?len:8192, 1, f_sign);
+    fclose(f_sign);*/
+
     plen = sizeof(p7i);
     p7i.object.pbData = sign;
-    p7i.object.cbData = len < 8192 ? len : 8192;
+    p7i.object.cbData = *len < 8192 ? *len : 8192;
     
     char *cpaSecondArg = nullptr;
     if (!CPAcquireContext(&hProv, cpaSecondArg, CRYPT_VERIFYCONTEXT, NULL))
@@ -117,7 +141,7 @@ int verify(std::string *profile, std::string *dataToSign, unsigned char *sign)
         return 0;
     }
 
-    if (!CPGetProvParam(hProv, PP_PKCS7_CONTENT_OID, (BYTE *)&p7i, &len, 0))
+    if (!CPGetProvParam(hProv, PP_PKCS7_CONTENT_OID, (BYTE *)&p7i, len, 0))
     {
         printf("error parse pkcs#7 %x\n", GetLastErrorCSP(hProv));
         CPReleaseContext(hProv, 0);
@@ -194,7 +218,7 @@ int verify(std::string *profile, std::string *dataToSign, unsigned char *sign)
                     CPGetKeyParam(hProv, hKey, KP_CRT_VTO, date_to, &date_size, 0);
                     printf("cert valid date to - %s\n", date_to);
 
-                    if (!CPVerifySignature(hProv, hHash, sign, len, hKey, 0, 0))
+                    if (!CPVerifySignature(hProv, hHash, sign, *len, hKey, 0, 0))
                     {
                         printf("error verify signature - %x\n", GetLastErrorCSP(hProv));
                     }
@@ -206,15 +230,16 @@ int verify(std::string *profile, std::string *dataToSign, unsigned char *sign)
                     hKey = 0;
                     i++;
                 }
-                len = sizeof(Cert);
-            } while (CPGetHashParam(hProv, hHash, HP_PKCS7_ENUM_CERT, Cert, &len, 0));
+                //DWORD len;
+                *len = sizeof(Cert);
+            } while (CPGetHashParam(hProv, hHash, HP_PKCS7_ENUM_CERT, Cert, len, 0));
         }
     }
 
     CPDestroyHash(hProv, hHash);
     CPReleaseContext(hProv, 0);
     //delete[] data;
-    free(data);
+    //free(data);
     FreeTumarCSP();
     return 1;
 }
