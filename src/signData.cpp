@@ -95,6 +95,7 @@ int signData(std::string *profile, std::string *dataToSign, unsigned char *sign,
         //delete[] data;
         return 0;
     }
+
     CPDestroyKey(hProv, hKey);
     CPDestroyHash(hProv, hHash);
     CPReleaseContext(hProv, 0);
@@ -218,13 +219,10 @@ int verify(std::string *profile, std::string *dataToSign, unsigned char *sign, D
                     CPGetKeyParam(hProv, hKey, KP_CRT_VTO, date_to, &date_size, 0);
                     printf("cert valid date to - %s\n", date_to);
 
-                    if (!CPVerifySignature(hProv, hHash, sign, *len, hKey, 0, 0))
-                    {
-                        printf("error verify signature - %x\n", GetLastErrorCSP(hProv));
-                    }
-                    else
-                    {
+                    if (CPVerifySignature(hProv, hHash, sign, *len, hKey, 0, 0)) {
                         printf("Signature verify\n");
+                    } else {
+                        printf("error verify signature - %x\n", GetLastErrorCSP(hProv));
                     }
                     CPDestroyKey(hProv, hKey);
                     hKey = 0;
